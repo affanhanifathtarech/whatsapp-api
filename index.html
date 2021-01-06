@@ -1,0 +1,37 @@
+<html>
+    <head>
+        <title>Hello World!</title>
+    </head>
+    <body>
+        <div class="app">
+            <img src="" alt="qrcode" id="qrcode">
+            <br/>
+            <ul id="logs"></ul>
+        </div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.5/socket.io.min.js" integrity="sha512-L9L4VhE0D58fCxtJiYDHbIzSVfNGY24rhQPWTZPschTVKLpucPsLeT0FSjfnylLYARalTQqgwXsjjhi+wUTwIw==" crossorigin="anonymous"></script>
+        <script>
+            $(document).ready( function(){
+                $('#qrcode').hide();
+                var socket = io.connect('http://localhost:8000', { path: '/socket.io'});
+
+                socket.on('message', function(msg) {
+                    $('#logs').append($('<li>').text(msg));
+                });
+                
+                socket.on('qr', function(src) {
+                    $('#qrcode').attr('src', src);
+                    $('#qrcode').show();
+                });
+                
+                socket.on('ready', function(src) {
+                    $('#qrcode').hide();
+                });
+
+                socket.on('authenticated', function(src) {
+                    $('#qrcode').hide();
+                });
+            });
+        </script>
+    </body>
+</html>
