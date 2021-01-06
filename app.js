@@ -1,6 +1,6 @@
 const { Client } = require('whatsapp-web.js');
 const express = require('express');
-const { body, validationResult } = require(express-validator);
+const { body, validationResult } = require('express-validator');
 const qrcode = require('qrcode');
 const socketIO = require('socket.io');
 const http = require('http');
@@ -55,6 +55,12 @@ io.on('connection', function(socket){
         });
     });
     
+    client.on('auth_failure', msg => {
+        // Fired if session restore was unsuccessfull
+        console.error('AUTHENTICATION FAILURE', msg);
+        socket.emit('message', 'Gagal! Autentikasi Error!');
+    });
+
     client.on('ready', () => {
         socket.emit('ready', 'Whatsapp terkoneksi! Anda telah siap!');
         socket.emit('message', 'Whatsapp terkoneksi! Anda telah siap!');
@@ -73,8 +79,26 @@ io.on('connection', function(socket){
     });
 });
 
+client.on('disconnected', (reason) => {
+    console.log('Client was logged out', reason);
+    socket.emit('message', 'Terputus!');
+});
+
 //POST POINT
-app.post('/send-message', (req, res) => {
+app.post('/send-message', [
+    body('number').notEmpty(),
+    body('message').notEmpty()
+  ], async (req, res) =>  {
+    const errors = validationResult(req).formatWith(({ msg }) => {
+        return msg;
+    })
+
+    if (!errors.isEmpty()) {
+        return res.status(422).json({
+            status: false,
+            message: errors.mapped()
+        });
+    }
     const number = req.body.number;
     const message = req.body.message;
     client.sendMessage(number, message).then(response => {
