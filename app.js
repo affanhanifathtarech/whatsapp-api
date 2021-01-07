@@ -8,6 +8,7 @@ const fs = require('fs');
 const { phoneNumberFormatter } = require('./helpers/formatter');
 const fileUpload = require('express-fileupload');
 const axios = require('axios');
+const port = process.env.PORT || 8000;
 
 const app = express();
 const server = http.createServer(app);
@@ -187,7 +188,7 @@ app.post('/send-media', async (req, res) => {
     });
   });
 
-server.listen(8000, function() {
-    console.log('app running port:' + 8000);
+server.listen(port, function() {
+    console.log('app running port:' + port);
 
 })
