@@ -1,11 +1,12 @@
 <html>
-
 <head>
     <title>kirim pesan</title>
 </head>
 
 <body>
-    <form action="http://localhost:8000/send-message" method="POST">
+    <div>
+    <h1>KIRIM PESAN</h1>
+    <form action="http://localhost:8000/send-message" target="_BLANK" method="POST">
         <div class="form-group">
         <label for="number">Phone: </label>
         <input type="text" id="number" name="number">
@@ -18,8 +19,31 @@
         <div class="form-group">
         <button type="submit">OKEEE</button>
         </div>
-
     </form>
+    </div>
+    </br>
+
+    <div>
+        <h1>KIRIM GAMBAR</h1>
+        <form action="http://localhost:8000/send-media" target="_BLANK" method="POST">
+            <div class="form-group">
+            <label for="number">Phone: </label>
+            <input type="text" id="number" name="number">
+            </div>
+            <div class="form-group">
+            <label for="caption">Caption: </label>
+            <input type="text" id="caption" name="caption">
+            </div>
+            <div class="form-group">
+            <label for="file">File: </label>
+            <input type="text" id="file" name="file">
+            </div>
+            <br/>
+            <div class="form-group">
+            <button type="submit">OKEEE</button>
+            </div>
+        </form>
+        </div>
 </body>
 
 </html>
