@@ -104,55 +104,58 @@ io.on('connection', function(socket) {
       client.destroy();
       client.initialize();
     });
-  });
+});
   
 const checkRegisteredNumber = async function(number) {
-    const isRegistered = await client.isRegisteredUser(number);
-    return isRegistered;
+  const isRegistered = await client.isRegisteredUser(number);
+  return isRegistered;
+}
+
+// Send message
+app.post('/send-message', [
+  body('number').notEmpty(),
+  body('message').notEmpty(),
+], async (req, res) => {
+  const errors = validationResult(req).formatWith(({
+    msg
+  }) => {
+    return msg;
+  });
+
+  if (!errors.isEmpty()) {
+    return res.status(422).json({
+      status: false,
+      message: errors.mapped()
+    });
   }
 
-//SEND MEDIA
-app.post('/send-message', [
-    body('number').notEmpty(),
-    body('message').notEmpty()
-  ], async (req, res) =>  {
-    const errors = validationResult(req).formatWith(({ msg }) => {
-        return msg;
-    })
+  const number = phoneNumberFormatter(req.body.number);
+  const message = req.body.message;
 
-    if (!errors.isEmpty()) {
-        return res.status(422).json({
-            status: false,
-            message: errors.mapped()
-        });
-    }
-    const number = phoneNumberFormatter(req.body.number);
-    const message = req.body.message;
+  const isRegisteredNumber = await checkRegisteredNumber(number);
 
-    const isRegisteredNumber = await checkRegisteredNumber(number);
-
-    if (!isRegisteredNumber) {
-      return res.status(422).json({
-        status: false,
-        message: 'The number is not registered'
-      });
-    }
-
-    client.sendMessage(number, message).then(response => {
-        res.status(200).json({
-            status: true,
-            response: response
-        }).catch(err => {
-            res.status(500).json({
-                status: false,
-                response: err
-            });
-        });
+  if (!isRegisteredNumber) {
+    return res.status(422).json({
+      status: false,
+      message: 'The number is not registered'
     });
+  }
+
+  client.sendMessage(number, message).then(response => {
+    res.status(200).json({
+      status: true,
+      response: response
+    });
+  }).catch(err => {
+    res.status(500).json({
+      status: false,
+      response: err
+    });
+  });
 });
 
 // Send media
-app.post('/send-media', async (req, res) => {
+app.post('/send-media', (req, res) => {
     const number = phoneNumberFormatter(req.body.number);
     const caption = req.body.caption;
 
@@ -161,19 +164,19 @@ app.post('/send-media', async (req, res) => {
    
     
     /* --- kirim gambar dari file upload --- */
-    // const file = req.files.file;
-    // const media = new MessageMedia(file.mimetype, file.data.toString('base64'), file.name);
+    const file = req.files.file;
+    const media = new MessageMedia(file.mimetype, file.data.toString('base64'), file.name);
     
-    /* --- kirim gambar dari url --- */
-    const fileUrl = req.body.file;
-    let mimetype;
-    const attachment = await axios.get(fileUrl, {
-      responseType: 'arraybuffer'
-    }).then(response => {
-      mimetype = response.headers['content-type'];
-      return response.data.toString('base64');
-    });
-    const media = new MessageMedia(mimetype, attachment, 'Media');
+    /* --- kirim gambar dari url (menggunakan async pada bagian atas--- */
+    // const fileUrl = req.body.file;
+    // let mimetype;
+    // const attachment = await axios.get(fileUrl, {
+    //   responseType: 'arraybuffer'
+    // }).then(response => {
+    //   mimetype = response.headers['content-type'];
+    //   return response.data.toString('base64');
+    // });
+    // const media = new MessageMedia(mimetype, attachment, 'Media');
   
     client.sendMessage(number, media, { caption: caption }).then(response => {
       res.status(200).json({
